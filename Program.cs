@@ -84,32 +84,32 @@ namespace BinPacking
             Solver solver = new Solver("BinPacking");
 
             IntVar[] x = new IntVar[obj.nbCourses];
-            IntVar[] load_vars = new IntVar[obj.nbPeriods];
+            IntVar[] loadVars = new IntVar[obj.nbPeriods];
 
             for (int i = 0; i < obj.nbCourses; i++)
                 x[i] = solver.MakeIntVar(0, obj.nbPeriods - 1, "x" + i);
 
             for (int i = 0; i < obj.nbPeriods; i++)
-                load_vars[i] = solver.MakeIntVar(0, obj.credits.Sum(), "load_vars" + i);
+                loadVars[i] = solver.MakeIntVar(0, obj.credits.Sum(), "loadVars" + i);
 
             //-------------------post of the constraints--------------
-            obj.Pack(solver, x, obj.credits, load_vars);
+            obj.Pack(solver, x, obj.credits, loadVars);
 
             foreach (Tuple<int, int> t in obj.prereqTupleArr)
                 solver.Add(x[t.Item1] < x[t.Item2]);
 
             //-------------------------Objective---------------------------
-            IntVar objective_var = solver.MakeMax(load_vars).Var();
-            OptimizeVar objective = solver.MakeMinimize(objective_var, 1);
+            IntVar objectiveVar = solver.MakeMax(loadVars).Var();
+            OptimizeVar objective = solver.MakeMinimize(objectiveVar, 1);
 
             //------------start the search and optimization-----------
             DecisionBuilder db = solver.MakePhase(x, Solver.CHOOSE_MIN_SIZE_LOWEST_MIN, Solver.INT_VALUE_DEFAULT);
-            SearchMonitor search_log = solver.MakeSearchLog(100000, objective_var);
-            solver.NewSearch(db, objective, search_log);
+            SearchMonitor searchLog = solver.MakeSearchLog(100000, objectiveVar);
+            solver.NewSearch(db, objective, searchLog);
 
             while (solver.NextSolution())
             {
-                Console.WriteLine(">> Objective: " + objective_var.Value());
+                Console.WriteLine(">> Objective: " + objectiveVar.Value());
             }
 
             solver.EndSearch();
